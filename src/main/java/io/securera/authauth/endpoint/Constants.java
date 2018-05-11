@@ -17,6 +17,6 @@ public final class Constants {
     public static final String CODE_PARAM = "code";
     public static final String TOKEN_PARAM = "token";
 
-    public static final String AUTHENTICATION_VIEW = "authenticate";
+//    public static final String AUTHENTICATION_VIEW = "authenticate";
     public static final String CONSENT_VIEW = "consent";
 }

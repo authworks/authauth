@@ -7,6 +7,7 @@
 <h2>Consent requested</h2>
 <p>${scope}</p>
 
-<form action="/authorize?${query}" method="post">
+<form action="/authorize?${rc.queryString}" method="post">
+    <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
     <button type="submit">Allow</button>
 </form>

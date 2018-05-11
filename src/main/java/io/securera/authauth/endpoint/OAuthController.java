@@ -1,12 +1,15 @@
 package io.securera.authauth.endpoint;
 
 import io.securera.authauth.exception.ForbiddenException;
+import io.securera.authauth.model.ResourceOwner;
 import io.securera.authauth.model.response.AuthorizationResponse;
 import io.securera.authauth.model.response.TokenResponse;
 import io.securera.authauth.service.AuthorizationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,6 +20,8 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+
+import java.security.Principal;
 
 import static io.securera.authauth.endpoint.Constants.*;
 
@@ -39,22 +44,20 @@ public class OAuthController {
                                   @RequestParam(name = SCOPE_PARAM, required = false) String scope, // OPTIONAL
                                   @RequestParam(name = STATE_PARAM, required = false) String state, // RECOMMENDED
                                   HttpMethod httpMethod,
-                                  HttpServletRequest httpServletRequest,
-                                  HttpSession httpSession,
+                                  Authentication authentication,
                                   ModelMap modelMap) {
 
+        UserDetails resourceOwner = (UserDetails) authentication.getPrincipal();
         if (httpMethod == HttpMethod.GET) {
-            modelMap.put("query", httpServletRequest.getQueryString());
-            return new ModelAndView(AUTHENTICATION_VIEW);
+            modelMap.put("clientName", "test client");
+            modelMap.put("userName", resourceOwner.getUsername());
+            modelMap.put("scope", scope);
+            return new ModelAndView(CONSENT_VIEW, modelMap);
         }
 
         if (httpMethod == HttpMethod.POST) {
-            if(httpSession == null || httpSession.isNew() || (Boolean) httpSession.getAttribute("logined") != true) {
-                throw new ForbiddenException("Not logined to approve consent");
-            }
-            String resourceOwnerId = (String) httpSession.getAttribute("userId");
             return new ModelAndView(
-                    redirect(redirectUri, authorizationService.grant(responseType, clientId, resourceOwnerId, scope, state))
+                redirect(redirectUri, authorizationService.grant(responseType, clientId, resourceOwner.getUsername(), scope, state))
             );
         }
 
